@@ -1,136 +1,108 @@
-# Zabbix Monitoring Quick Guide
-# Zabbix Monitoring System
 
-## 📌 Overview
+# Zabbix Monitoring System Documentation
 
-Zabbix is an enterprise-grade open-source monitoring platform used to track the performance and availability of devices such as servers, network switches, storage, and applications.
+## 1. Overview
 
-It provides:
+Zabbix is an open-source monitoring solution used to track system health, performance, and availability of network devices, servers, applications, and media workflows.
 
-* Real-time monitoring
-* Alerts and notifications
-* Trend analysis and dashboards
-* Agent-based and agentless monitoring
+This document explains:
+- What Zabbix is and key terminology
+- How monitoring is organized in our studio network
+- Installation details for our Zabbix Server (already deployed)
+- How to add a new machine to the monitoring system
+- Basic troubleshooting guidance
 
----
+------------------------------------------------------------
 
-## 🧠 How Zabbix Works
+## 2. Current Deployment Summary
 
-Zabbix operates using several core components:
+Component | Type | Status | Notes
+----------|------|--------|-------
+Zabbix Server | Docker Compose deployment | Running | Hosted on Mac mini
+Database | MySQL 8.0 | Running | Persistent storage enabled
+Zabbix Web Interface | NGINX + PHP-FPM | Running | Accessible via browser
+Docker Network | zabbix-net | Created | Internal service routing
+Storage | Volume-mapped | Persistent | Located on host machine
 
-| Component                    | Role                                                        |
-| ---------------------------- | ----------------------------------------------------------- |
-| **Zabbix Server**            | Core engine collecting and processing data                  |
-| **Zabbix Frontend (Web UI)** | Web interface for configuration, alerts, graphs, dashboards |
-| **Zabbix Agent**             | Installed on monitored devices to collect metrics           |
-| **Database (MySQL/MariaDB)** | Stores configuration and collected metrics                  |
-| **Network (zabbix-net)**     | Docker network allowing component communication             |
+------------------------------------------------------------
 
-Data flows from the **agent ➜ server ➜ database ➜ UI**.
+### Zabbix Server Host Information
 
----
+Parameter | Value
+---------|-------
+Host Operating System | macOS (Mac mini Server)
+Zabbix Access URL | http://192.168.154.113:8080 or http://localhost:8080
+Local Private Network Address | 192.168.154.113
+Data Storage Location | Persistent Docker Volumes
 
-## 🏗 System Architecture (Docker-based)
+------------------------------------------------------------
 
-This setup uses Docker to deploy:
+## 3. Key Terminologies
 
-* `mysql-server`
-* `zabbix-server`
-* `zabbix-web-nginx-mysql`
-* `zabbix-agent`
+Term | Meaning
+-----|--------
+Server | The main Zabbix instance storing data, processing checks, running triggers, alerts, and web UI.
+Agent | Software installed on monitored machines (Windows, Mac, Linux) to collect metrics and send them to the server.
+Host | Any monitored device inside Zabbix such as a server, PC, encoder, bridge, or system.
+Template | A reusable monitoring rule set including items, triggers, graphs, and discovery rules.
+Item | A single metric being monitored (CPU usage, disk space, uptime, temperature, etc.).
+Trigger | A condition that turns raw data into meaningful alerts (example: CPU > 95% for 5 minutes).
+Action | Automated behavior when trigger fires (email, Slack message, script execution).
 
-All services run inside containers and communicate over a dedicated Docker network.
+------------------------------------------------------------
 
----
+## 4. Monitoring Scope
 
-## 📦 Installation Instructions
+Category | Example Devices | Method
+--------|----------------|-------
+BPCR Machines | Broadcast control room PCs | Agent-based monitoring
+AJA Bridges | AJA hardware bridges | HTTP polling automation
+Studio Machines | Studio recording and streaming systems | Agent-based monitoring
+Small PCR Devices | Auxiliary systems | Agent or SNMP monitoring
 
-### 1️⃣ Create a Working Directory
+------------------------------------------------------------
 
-```bash\mkdir zabbix && cd zabbix
-```
+## 5. Zabbix Server Installation (already completed)
 
-### 2️⃣ Create Docker Volumes
+The server is deployed using Docker Compose.
 
-```bash\docker volume create zabbix-server_mysql_data
-```
+Commands executed:
 
-### 3️⃣ Create Docker Network
+docker network create zabbix-net
+docker compose up -d
 
-```bash\docker network create zabbix-net
-```
+All containers launch automatically and persist across reboot.
 
-### 4️⃣ Create `docker-compose.yml`
+------------------------------------------------------------
 
-Copy the yaml content into a file named `docker-compose.yml`:
+## 6. Adding New Machines to Monitoring
 
----
+### Step 1 — Install Zabbix Agent
 
-### 5️⃣ Start the Stack
+TBD
 
-```bash\docker compose up -d
-```
+### Step 2 — Configure Agent
 
-### 6️⃣ Verify Running Services
+TBD
 
-```bash\docker ps
-```
+### Step 3 — Allow Firewall
 
-You should see **four containers** running.
+TBD
 
----
+------------------------------------------------------------
 
-## 🌐 Accessing Zabbix Web UI
+## 7. Troubleshooting
 
-Open a browser and go to:
+Issue | Fix
+------|-----
+Host unreachable | Check firewall + agent service status
+Data missing | Check Server and ServerActive IP config
+Ping OK but no data | Template missing or items disabled
+------------------------------------------------------------
 
-```
-http://localhost:8080
-```
+## 8. Future Improvements
 
-### Default Login:
+- Slack/Email alert actions
+- Dashboard UI refinements
 
-| Field    | Value    |
-| -------- | -------- |
-| Username | `Admin`  |
-| Password | `zabbix` |
-
----
-
-## 🧪 Testing Connectivity
-
-Check database:
-
-```bash\docker exec -it mysql-server mysql -uroot -pzabbix -e "SHOW DATABASES;"
-```
-
-Check server logs:
-
-```bash\docker logs zabbix-server
-```
-
----
-
-## 🎉 Setup Complete
-
-Zabbix is now running and ready to monitor hosts, services, and applications.
-
-You can now:
-
-* Add hosts
-* Enable templates
-* Create custom triggers & alerts
-* Configure email or messaging notifications
-
----
-
-## 📄 Next Steps
-
-✔ Adding Windows/Linux agents
-
-✔ Setting up notifications (e.g., Slack, Telegram, Email)
-
-✔ Custom dashboards and graphs
-
----
 
