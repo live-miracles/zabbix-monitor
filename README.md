@@ -68,26 +68,139 @@ The server is deployed using Docker Compose.
 
 Commands executed:
 
+```
 docker network create zabbix-net
 docker compose up -d
+```
 
 All containers launch automatically and persist across reboot.
 
 ------------------------------------------------------------
 
-## 6. Adding New Machines to Monitoring
+## 6. Adding New Windows Machines to Monitoring
 
-### Step 1 — Install Zabbix Agent
+Follow the steps below to install and configure the Zabbix agent on new Windows machines and register them in Zabbix.
 
-TBD
+---
 
-### Step 2 — Configure Agent
+### **Step 1 — Download and Install Zabbix Agent**
 
-TBD
+1. Download the latest Windows Zabbix Agent (OpenSSL version) from:  
+   https://www.zabbix.com/download_agents?version=7.4&release=7.4.3&os=Windows&os_version=Any&hardware=amd64&encryption=OpenSSL&packaging=Archive&show_legacy=0
 
-### Step 3 — Allow Firewall
+2. Extract the downloaded ZIP file into:
 
-TBD
+```
+C:\Program Files\Zabbix Agent
+```
+
+3. Open PowerShell **as Administrator**, then navigate into the installation path:
+
+```powershell
+cd "C:\Program Files\Zabbix Agent\bin"
+```
+
+4. Install the agent as a Windows service:
+
+```powershell
+.\zabbix_agentd.exe --config "C:\Program Files\Zabbix Agent\conf\zabbix_agentd.conf" --install
+```
+
+---
+
+### **Step 2 — Configure the Agent**
+
+Edit the configuration file:
+
+```
+C:\Program Files\Zabbix Agent\conf\zabbix_agentd.conf
+```
+
+Update the following required fields:
+
+```ini
+LogFile=C:\Program Files\Zabbix Agent\zabbix_agentd.log
+
+Server=192.168.154.77,192.168.154.119,192.168.100.48
+ServerActive=192.168.154.77,192.168.154.119,192.168.100.48
+
+Hostname=<MACHINE_NAME>
+AllowKey=system.run[*]
+```
+
+> Ensure **Hostname matches exactly the host entry** configured in the Zabbix frontend.
+
+After editing, restart the service so changes take effect:
+
+```powershell
+Restart-Service "Zabbix Agent"
+```
+
+---
+
+### **Step 3 — Allow Firewall**
+
+Open port **10050** for agent communication:
+
+```powershell
+New-NetFirewallRule -DisplayName "Zabbix Agent" -Direction Inbound -Protocol TCP -LocalPort 10050 -Action Allow
+```
+
+---
+
+### **Step 4 — Verify Connectivity**
+
+Run the following command from the Zabbix server or another monitored machine with zabbix_get installed:
+
+```powershell
+zabbix_get -s <IP_ADDRESS> -p 10050 -k "system.uptime"
+```
+
+Expected Output:
+
+```
+12345
+```
+
+If the value returns, the agent is communicating successfully.
+
+---
+
+### **Step 5 — Register Host in Zabbix UI**
+
+1. Go to:  
+   **Configuration → Hosts → Create Host**
+2. Fill in:
+   - **Host name:** _must match Hostname in config_
+   - **Visible name:** optional
+   - **Group:** select relevant category
+   - **Interface:**  
+     - Agent  
+     - IP address of the machine  
+     - Port: `10050`
+3. Assign appropriate **Templates** (e.g., Windows by Zabbix Agent).
+4. Save.
+
+---
+
+### **Step 6 — Confirm Monitoring**
+
+After 1–3 minutes:
+
+- Host status should turn **green (ZBX ON)**.
+- Latest data should start appearing.
+
+If not, check:
+
+```powershell
+Get-Service "Zabbix Agent"
+Get-Content "C:\Program Files\Zabbix Agent\zabbix_agentd.log" -Tail 50
+```
+
+---
+
+✔ **Machine is now active and monitored.**
+
 
 ------------------------------------------------------------
 
