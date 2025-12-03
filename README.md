@@ -117,33 +117,8 @@ Edit the configuration file:
 C:\Program Files\Zabbix Agent\conf\zabbix_agentd.conf
 ```
 
-Update the following required fields:
+Update the configuration file for zabbix agent, templates in `./windows-agents/zabbix-agentd.conf`.
 
-```ini
-############## Zabbix Agent Configuration ##############
-
-# Location where the agent writes its logs
-LogFile=C:\Program Files\Zabbix Agent\zabbix_agentd.log
-
-# Dell tower: 192.168.154.119
-# Mac Mini: 192.168.154.113
-# Network team Zabbix server: 192.168.100.48
-
-# List of Zabbix servers allowed to connect to this agent (passive checks)
-# Format: IP1,IP2,IP3
-Server=192.168.154.113,192.168.100.48
-
-# List of Zabbix servers for active checks (the agent will connect to these)
-ServerActive=192.168.154.113,192.168.100.48
-
-# The name of this machine as defined in the Zabbix frontend
-# Must match EXACTLY the Hostname in Zabbix UI
-Hostname=<MACHINE_NAME>
-
-# Optional: allow system.run[*] commands (safe mode)
-# Enables executing allowed remote commands from Zabbix server
-AllowKey=system.run[*]
-```
 
 > Ensure **Hostname matches exactly the host entry** configured in the Zabbix frontend.
 
