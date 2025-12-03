@@ -2,7 +2,7 @@ services:
   mysql-server:
     image: mysql:8.0
     container_name: mysql-server
-    restart: unless-stopped
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_pwd
       MYSQL_DATABASE: zabbix
@@ -10,13 +10,16 @@ services:
       MYSQL_PASSWORD: zabbix_pwd
     volumes:
       - zabbix-server_mysql_data:/var/lib/mysql
+      - ./mysql-binlog.cnf:/etc/mysql/conf.d/mysql-binlog.cnf
     networks:
       - zabbix-net
+    ports:
+      - "3306:3306"
 
   zabbix-server:
     image: zabbix/zabbix-server-mysql:alpine-7.4-latest
     container_name: zabbix-server-mysql
-    restart: unless-stopped
+    restart: always
     depends_on:
       - mysql-server
     environment:
@@ -38,7 +41,7 @@ services:
   zabbix-web:
     image: zabbix/zabbix-web-nginx-mysql:alpine-7.4-latest
     container_name: zabbix-web-nginx
-    restart: unless-stopped
+    restart: always
     depends_on:
       - zabbix-server
       - mysql-server
@@ -58,7 +61,7 @@ services:
   zabbix-agent:
     image: zabbix/zabbix-agent2:latest
     container_name: zabbix-agent
-    restart: unless-stopped
+    restart: always
     depends_on:
       - zabbix-server
     environment:
@@ -76,4 +79,3 @@ networks:
 volumes:
   zabbix-server_mysql_data:
     external: true
-

@@ -31,7 +31,7 @@ Storage | Volume-mapped | Persistent | Located on host machine
 Parameter | Value
 ---------|-------
 Host Operating System | macOS (Mac mini Server)
-Zabbix Access URL | http://192.168.154.113:8080 or http://localhost:8080
+Zabbix Admin Panel Access URL | http://192.168.154.113:8080
 Local Private Network Address | 192.168.154.113
 Data Storage Location | Persistent Docker Volumes
 
@@ -53,12 +53,12 @@ Action | Automated behavior when trigger fires (email, Slack message, script exe
 
 ## 4. Monitoring Scope
 
-Category | Example Devices | Method
+Category | Explanation | Method
 --------|----------------|-------
-BPCR Machines | Broadcast control room PCs | Agent-based monitoring
+Big PCR Machines | BPCR room PCs 7-11| Agent-based monitoring
+Studio Machines | Studio machines in Car room 1-12, Main & Backups | Agent-based monitoring
+Small PCR Devices | SPCR room PCs | Agent-based monitoring
 AJA Bridges | AJA hardware bridges | HTTP polling automation
-Studio Machines | Studio recording and streaming systems | Agent-based monitoring
-Small PCR Devices | Auxiliary systems | Agent or SNMP monitoring
 
 ------------------------------------------------------------
 
@@ -69,8 +69,9 @@ The server is deployed using Docker Compose.
 Commands executed:
 
 ```
-docker network create zabbix-net
-docker compose up -d
+cd server;
+docker network create zabbix-net;
+docker compose up -d;
 ```
 
 All containers launch automatically and persist across reboot.
@@ -119,12 +120,28 @@ C:\Program Files\Zabbix Agent\conf\zabbix_agentd.conf
 Update the following required fields:
 
 ```ini
+############## Zabbix Agent Configuration ##############
+
+# Location where the agent writes its logs
 LogFile=C:\Program Files\Zabbix Agent\zabbix_agentd.log
 
-Server=192.168.154.77,192.168.154.119,192.168.100.48
-ServerActive=192.168.154.77,192.168.154.119,192.168.100.48
+# Dell tower: 192.168.154.119
+# Mac Mini: 192.168.154.113
+# Network team Zabbix server: 192.168.100.48
 
+# List of Zabbix servers allowed to connect to this agent (passive checks)
+# Format: IP1,IP2,IP3
+Server=192.168.154.113,192.168.100.48
+
+# List of Zabbix servers for active checks (the agent will connect to these)
+ServerActive=192.168.154.113,192.168.100.48
+
+# The name of this machine as defined in the Zabbix frontend
+# Must match EXACTLY the Hostname in Zabbix UI
 Hostname=<MACHINE_NAME>
+
+# Optional: allow system.run[*] commands (safe mode)
+# Enables executing allowed remote commands from Zabbix server
 AllowKey=system.run[*]
 ```
 
