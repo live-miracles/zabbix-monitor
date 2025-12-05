@@ -43,7 +43,8 @@ Term | Meaning
 -----|--------
 Server | The main Zabbix instance storing data, processing checks, running triggers, alerts, and web UI.
 Agent | Software installed on monitored machines (Windows, Mac, Linux) to collect metrics and send them to the server.
-Host | Any monitored device inside Zabbix such as a server, PC, encoder, bridge, or system.
+Host | Any monitored device inside Zabbix such as a server, PC, encoder, AJA bridges, or any other system.
+Host Group | A logical grouping of hosts for easier management and organization.
 Template | A reusable monitoring rule set including items, triggers, graphs, and discovery rules.
 Item | A single metric being monitored (CPU usage, disk space, uptime, temperature, etc.).
 Trigger | A condition that turns raw data into meaningful alerts (example: CPU > 95% for 5 minutes).
@@ -64,9 +65,9 @@ AJA Bridges | AJA hardware bridges | HTTP polling automation
 
 ## 5. Zabbix Server Installation (already completed)
 
-The server is deployed using Docker Compose.
+The server is deployed using Docker Compose. We should ensure Docker and Docker Compose are installed on the host machine before proceeding.
 
-Commands executed:
+After cloning the repository, navigate to the `server` directory and set up the Docker network and start the services, as follows:
 
 ```
 cd server;
@@ -86,7 +87,8 @@ Follow the steps below to install and configure the Zabbix agent on new Windows 
 
 ### **Step 1 — Download and Install Zabbix Agent**
 
-1. Download the latest Windows Zabbix Agent (OpenSSL version) from:  
+1. Download the latest Windows Zabbix Agent (OpenSSL version), we suggest version 7.4.3, and instead of MSI, download the ZIP archive. Use the link below:
+
    https://www.zabbix.com/download_agents?version=7.4&release=7.4.3&os=Windows&os_version=Any&hardware=amd64&encryption=OpenSSL&packaging=Archive&show_legacy=0
 
 2. Extract the downloaded ZIP file into:
@@ -111,7 +113,7 @@ cd "C:\Program Files\Zabbix Agent\bin"
 
 ### **Step 2 — Configure the Agent**
 
-Edit the configuration file:
+Edit the configuration file, you will need to open the Notepad or any text editor with Administrator privileges to edit:
 
 ```
 C:\Program Files\Zabbix Agent\conf\zabbix_agentd.conf
@@ -120,7 +122,7 @@ C:\Program Files\Zabbix Agent\conf\zabbix_agentd.conf
 Update the configuration file for zabbix agent, templates in `./windows-agents/zabbix-agentd.conf`.
 
 
-> Ensure **Hostname matches exactly the host entry** configured in the Zabbix frontend.
+> Ensure **Hostname matches exactly the host entry** configured in the Zabbix frontend. Otherwise, the agent will not register correctly.
 
 After editing, restart the service so changes take effect:
 
@@ -132,6 +134,8 @@ Restart-Service "Zabbix Agent"
 
 ### **Step 3 — Allow Firewall**
 
+This step is optional if we use active checks only, recommended for troubleshooting. 
+
 Open port **10050** for agent communication:
 
 ```powershell
@@ -140,7 +144,7 @@ New-NetFirewallRule -DisplayName "Zabbix Agent" -Direction Inbound -Protocol TCP
 
 ---
 
-### **Step 4 — Verify Connectivity**
+### **Step 4 — Verify Connectivity(Optional)**
 
 Run the following command from the Zabbix server or another monitored machine with zabbix_get installed:
 
@@ -165,12 +169,12 @@ If the value returns, the agent is communicating successfully.
 2. Fill in:
    - **Host name:** _must match Hostname in config_
    - **Visible name:** optional
-   - **Group:** select relevant category
+   - **Group:** select relevant category, e.g., BPCR, Studio, SPCR, AJA, etc.
    - **Interface:**  
      - Agent  
      - IP address of the machine  
      - Port: `10050`
-3. Assign appropriate **Templates** (e.g., Windows by Zabbix Agent).
+3. Assign appropriate **Templates** (e.g., Windows by Zabbix Agent Active).
 4. Save.
 
 ---
@@ -186,7 +190,8 @@ If not, check:
 
 ```powershell
 Get-Service "Zabbix Agent"
-Get-Content "C:\Program Files\Zabbix Agent\zabbix_agentd.log" -Tail 50
+# Please use the correct path if different
+Get-Content "C:\Livestream\zabbix_agentd.log" -Tail 50
 ```
 
 ---
