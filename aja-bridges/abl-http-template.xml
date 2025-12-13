@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>7.4</version>
+
+    <template_groups>
+        <template_group>
+            <uuid>f3a9e6a1d9a54c7db3cbd0a6c1010001</uuid>
+            <name>Templates/Video</name>
+        </template_group>
+    </template_groups>
+
+    <templates>
+        <template>
+            <uuid>c2b4a0a2a8b9488bb4b9b9a3c1010002</uuid>
+            <template>Template AJA Bridge Live (JSON)</template>
+            <name>Template AJA Bridge Live (JSON)</name>
+
+            <groups>
+                <group>
+                    <name>Templates/Video</name>
+                </group>
+            </groups>
+
+            <macros>
+                <macro>
+                    <macro>{$AJA.IP}</macro>
+                </macro>
+                <macro>
+                    <macro>{$AJA.COOKIE}</macro>
+                </macro>
+                <macro>
+                    <macro>{$AJA.SDI_IF}</macro>
+                    <value>aja-sdi-0</value>
+                </macro>
+                <macro>
+                    <macro>{$AJA.NET_IF}</macro>
+                    <value>eno1</value>
+                </macro>
+            </macros>
+
+            <items>
+
+                <!-- SDI master -->
+                <item>
+                    <uuid>11111111111111111111111111111101</uuid>
+                    <name>AJA Data API (raw JSON) - SDI</name>
+                    <type>HTTP_AGENT</type>
+                    <key>aja.api.raw.sdi</key>
+                    <delay>1s</delay>
+                    <history>1d</history>
+                    <value_type>TEXT</value_type>
+                    <url>http://{$AJA.IP}/ui/dashboard/data?interface={$AJA.SDI_IF}&amp;device=0</url>
+                    <headers>
+                        <header>
+                            <name>Cookie</name>
+                            <value>{$AJA.COOKIE}</value>
+                        </header>
+                    </headers>
+                </item>
+
+                <!-- NET master -->
+                <item>
+                    <uuid>11111111111111111111111111111102</uuid>
+                    <name>AJA Data API (raw JSON) - NET</name>
+                    <type>HTTP_AGENT</type>
+                    <key>aja.api.raw.net</key>
+                    <delay>1s</delay>
+                    <history>1d</history>
+                    <value_type>TEXT</value_type>
+                    <url>http://{$AJA.IP}/ui/dashboard/data?interface={$AJA.NET_IF}&amp;device=0</url>
+                    <headers>
+                        <header>
+                            <name>Cookie</name>
+                            <value>{$AJA.COOKIE}</value>
+                        </header>
+                    </headers>
+                </item>
+
+                <!-- CPU -->
+                <item>
+                    <uuid>11111111111111111111111111111103</uuid>
+                    <name>CPU Utilization</name>
+                    <type>DEPENDENT</type>
+                    <key>aja.cpu.util</key>
+                    <value_type>FLOAT</value_type>
+                    <trends>31d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.charts.utilizationCpu[-1].y</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>aja.api.raw.sdi</key>
+                    </master_item>
+                </item>
+
+                <!-- GPU -->
+                <item>
+                    <uuid>11111111111111111111111111111104</uuid>
+                    <name>GPU Utilization</name>
+                    <type>DEPENDENT</type>
+                    <key>aja.gpu.util</key>
+                    <value_type>FLOAT</value_type>
+                    <trends>31d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.charts.utilizationGpu[-1].y</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>aja.api.raw.sdi</key>
+                    </master_item>
+                </item>
+
+                <!-- GPU Temp -->
+                <item>
+                    <uuid>11111111111111111111111111111105</uuid>
+                    <name>GPU Temperature</name>
+                    <type>DEPENDENT</type>
+                    <key>aja.gpu.temp</key>
+                    <value_type>FLOAT</value_type>
+                    <trends>31d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.gpuTemperatures[0].temperature</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>aja.api.raw.sdi</key>
+                    </master_item>
+                </item>
+
+                <!-- Network Read -->
+                <item>
+                    <uuid>11111111111111111111111111111106</uuid>
+                    <name>Network Read BPS</name>
+                    <type>DEPENDENT</type>
+                    <key>aja.net.read</key>
+                    <value_type>FLOAT</value_type>
+                    <trends>31d</trends>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <parameters>
+                                <parameter>$.charts.networkRead[-1].y</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>aja.api.raw.net</key>
+                    </master_item>
+                </item>
+
+            </items>
+        </template>
+    </templates>
+</zabbix_export>
