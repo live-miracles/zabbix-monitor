@@ -1,7 +1,6 @@
 [mysqld]
-# Keep binlogs for 2 days
-expire_logs_days = 2
-binlog_expire_logs_seconds = 172800
-
-# Optional: ensure binlogging is enabled explicitly
+# Enable binary logging
 log_bin = mysql-bin
+
+# Retain binary logs only 1 hour
+binlog_expire_logs_seconds = 3600
