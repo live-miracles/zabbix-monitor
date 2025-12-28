@@ -201,7 +201,35 @@ Get-Content "C:\Livestream\zabbix_agentd.log" -Tail 50
 
 ------------------------------------------------------------
 
-## 7. Troubleshooting
+## 7. Housekeeping
+
+To manage disk space and maintain performance of the Zabbix database, we implemented a daily script `server/shrink_zabbix_history.sh` that rebuilds the key history tables in MySQL.
+
+### Key Points
+
+1. **InnoDB behavior**
+    - MySQL's InnoDB storage engine **does not automatically return freed disk space** to the operating system after deleting rows.
+    - Even when housekeeping removes old data according to retention settings, the physical table file size remains the same.
+
+2. **Purpose of the script**
+    - The script uses `pt-online-schema-change` to **rebuild the history tables** (`history`, `history_uint`, `history_text`) safely.
+    - This operation **reclaims disk space** while keeping Zabbix fully operational and minimizing downtime.
+
+3. **Housekeeping / retention**
+    - Housekeeping deletes old rows based on the configured retention periods (e.g., history: 7 days, trends: 365 days).
+    - Disk space will not shrink automatically; running the script periodically is required to **actually free disk space**.
+
+4. **Automation**
+    - The script is scheduled via **cron** to run daily, ensuring tables do not grow excessively and the database remains healthy.
+
+5. **Monitoring**
+    - Table sizes and row counts can be monitored with queries against `information_schema.tables` and `COUNT(*)` on each history table.
+    - Disk usage should gradually decrease after each run, and new data will reuse the reclaimed space.
+
+
+------------------------------------------------------------
+
+## Troubleshooting
 
 Issue | Fix
 ------|-----
@@ -210,7 +238,7 @@ Data missing | Check Server and ServerActive IP config
 Ping OK but no data | Template missing or items disabled
 ------------------------------------------------------------
 
-## 8. Future Improvements
+## Future Improvements
 
 - Slack/Email alert actions
 - Dashboard UI refinements
